@@ -1,0 +1,52 @@
+# Hermes Agent — versioned config (machine-independent).
+# Deploy: copy this to ~/.hermes/config.yaml on whichever Mac runs Hermes.
+# Secrets do NOT live here — they go in ~/.hermes/.env (gitignored). See .env.example.
+#
+# NOTE on model slugs: exact OpenRouter IDs move over time. Verify against
+# https://openrouter.ai/models before first run; the (verify) ones are best-guess.
+
+# ---------------------------------------------------------------------------
+# BRAIN — hosted open-source via OpenRouter. Cheap (cents/day at our volume),
+# capable enough for real marketing reasoning. Chosen over local on a 16GB Mac
+# so it doesn't starve product-building work. (See DECISIONS.md D2.)
+# ---------------------------------------------------------------------------
+model:
+  default: "deepseek/deepseek-chat"        # DeepSeek-V3 — strategist brain (verify slug)
+  provider: "openrouter"
+  base_url: null
+
+fallback_providers:
+  - model: "nousresearch/hermes-4"         # on-theme fallback (verify exact slug)
+    provider: "openrouter"
+
+# Routine/high-volume tasks (summarizing feeds, compressing context) can use a
+# cheaper model than the strategist. Left on "auto" (= main model) until we see
+# real usage; swap to a tiny cheap model here to cut cost further.
+auxiliary:
+  compression:
+    provider: "auto"
+    model: ""
+
+# ---------------------------------------------------------------------------
+# SANDBOX — agent-run commands NEVER touch the bare host. (Guardrail, DECISIONS.md D5.)
+# ---------------------------------------------------------------------------
+terminal:
+  backend: docker
+  docker_image: "nikolaik/python-nodejs:python3.11-nodejs20"
+  docker_mount_cwd_to_workspace: false     # do NOT mount your working dir into the box
+  docker_run_as_host_user: false
+  docker_forward_env: []                    # forward NOTHING into the sandbox by default
+  container_cpu: 1
+  container_memory: 2048                     # MB — modest; 16GB is shared with your dev work
+  timeout: 180
+
+# ---------------------------------------------------------------------------
+# SECURITY
+# ---------------------------------------------------------------------------
+security:
+  redact_secrets: true                       # strip secrets from logs/tool output
+  tirith_enabled: true                       # policy engine on
+  tirith_timeout: 5
+  tirith_fail_open: false                    # HARDENED: fail CLOSED. If the policy guard
+                                             # can't run, BLOCK the action (don't allow).
+                                             # Safer for an agent that can post publicly.
