@@ -1,0 +1,27 @@
+# SECRETS — never commit. The whole guardrail model depends on this.
+.env
+.env.*
+!.env.example
+hermes/.env
+hermes/.env.*
+!hermes/.env.example
+*.key
+*.pem
+auth.json
+secrets/
+
+# Local-only Hermes runtime state (canonical config is versioned; runtime is not)
+.hermes/
+sessions/
+logs/
+*.log
+
+# Local offline snapshot of the Notion hub (Notion stays canonical)
+notion/snapshot/
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
